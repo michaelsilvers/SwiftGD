@@ -22,11 +22,13 @@ SwiftGD manages GD resources for you, so the underlying memory is released when 
 
 Install the GD library on your computer. If you're using macOS, install [Homebrew](http://brew.sh/) then run the command `brew install gd`. If you're using Linux, run `apt-get libgd-dev` as root.
 
-Now add the following dependency to your Package.swift file:
+Modify your Package.swift file to include the following dependency:
 
-    .Package(url: "https://github.com/twostraws/SwiftGD.git", majorVersion: 1, minor: 0)
+    .package(url: "https://github.com/twostraws/SwiftGD.git", from: "2.0.0")
 
-SwiftGD has a single Swift dependency, which is [Cgd](https://github.com/twostraws/Cgd.git).
+You should also include “SwiftGD” in your list of target dependencies.
+
+SwiftGD itself has a single Swift dependency, which is [Cgd](https://github.com/twostraws/Cgd.git).
 
 
 ## Classes
@@ -60,6 +62,15 @@ let image = Image(width: 500, height: 500)
 
 Again, that will return an optional `Image` if the memory was allocated correctly.
 
+You can even create an image from `Data` instances:
+
+```swift  
+let data: Data = ... // e.g. from networking request
+let image = try Image(data: data, as: .png)
+```
+
+This will throw an `Error` if `data` is not actual an image data representation or does not match given raster format (`.png` in this case). If you omit the raster format, all supported raster formats will be evaluated and an `Image` will be returned if any matches (caution, this may take significantly longer).
+
 When you want to save an image back to disk, use the `write(to:)` method on `Image`, like this:
 
 ```swift
@@ -68,6 +79,16 @@ image.write(to: url)
 ```
 
 Again, the format is determined by your choice of file extension. `write(to:)` will return false and refuse to continue if the file exists already; it will return true if the file was saved successfully.
+
+You can also export images as `Data` representations with certain image raster format, like so:
+
+```swift  
+let image = Image(width: 500, height: 500)
+image?.fill(from: .zero, color: .red)
+let data = try image?.export(as: .png)
+```
+
+This will return the data representation of a red PNG image with 500x500px in size.
 
 Images are also created when performing a resize operation, which means your original image is untouched. You have three options for resizing:
 
@@ -110,7 +131,7 @@ This first example creates a new 500x500 image, fills it red, draw a blue ellips
 
 ```swift
 import Foundation
-import swiftgd
+import SwiftGD
 
 // figure out where to save our file
 let currentDirectory = URL(fileURLWithPath: FileManager().currentDirectoryPath)
@@ -142,7 +163,7 @@ This second examples draws concentric rectangles in alternating blue and white c
 
 ```swift
 import Foundation
-import swiftgd
+import SwiftGD
 
 let currentDirectory = URL(fileURLWithPath: FileManager().currentDirectoryPath)
 let destination = currentDirectory.appendingPathComponent("output-2.png")
@@ -172,7 +193,7 @@ This third example creates a black, red, green, and yellow gradient by setting i
 
 ```swift
 import Foundation
-import swiftgd
+import SwiftGD
 
 let currentDirectory = URL(fileURLWithPath: FileManager().currentDirectoryPath)
 let destination = currentDirectory.appendingPathComponent("output-3.png")
@@ -190,11 +211,12 @@ if let image = Image(width: size, height: size) {
 }
 ```
 
+
 ## License
 
 This package is released under the MIT License, which is copied below.
 
-Copyright (c) 2016 Paul Hudson
+Copyright (c) 2017 Paul Hudson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
